@@ -1,6 +1,6 @@
-public class WriterCSVInBD extends WriterCSV {
+public class WriterCSVInDB extends WriterCSV {
 
-    WriterCSVInBD(String PATH, String USER, String PASSWORD){
+    WriterCSVInDB(String PATH, String USER, String PASSWORD){
         this.PATH = PATH;
         this.USER = USER;
         this.PASSWORD = PASSWORD;

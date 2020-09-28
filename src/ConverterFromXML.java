@@ -32,7 +32,12 @@ public class ConverterFromXML {
             if (listSpaces.get(i) == 0)
                 continue;
 
-            if (spacesSubRootObj == null)
+            if (spacesSubRootObj != null) {
+                if (spacesSubRootObj.equals(listSpaces.get(i)) && listLines.get(i).charAt(1) == '/') {
+                    result.add(new ArrayList<>());
+                    indexForResult++;
+                }
+            } else {
                 if (!getNameParam(listLines.get(i)).equals(getNameParam(listLines.get(i + 1)))) {
                     if (listSpaces.get(i).equals(listSpaces.get(i + 1))) {
                         spacesSubRootObj = 0;
@@ -42,7 +47,10 @@ public class ConverterFromXML {
                 } else {
                     spacesSubRootObj = listSpaces.get(i);
                 }
+            }
 
+            if (line.startsWith("</"))
+                continue;
 
             if (line.startsWith("<")) {
 
@@ -52,17 +60,15 @@ public class ConverterFromXML {
                         if (line.charAt(j) == '\"')
                             for (int p = j + 1; line.charAt(p) != '\"'; p++) {
                                 value.append(line.charAt(p));
-                                j = p;
+                                j = p + 1;
                             }
-                        result.get(indexForResult).add(value.toString());
+                        if (!value.toString().equals("")) {
+                            result.get(indexForResult).add(value.toString());
+                            value = new StringBuilder();
+                        }
                     }
                 if (!listSpaces.get(i).equals(spacesSubRootObj))
                     result.get(indexForResult).add(getValueFromLine(listLines, i));
-            }
-
-            if (spacesSubRootObj.equals(listSpaces.get(i))) {
-                result.add(new ArrayList<>());
-                indexForResult++;
             }
         }
 
@@ -73,16 +79,30 @@ public class ConverterFromXML {
     private String getValueFromLine(List<String> listLines, int indexList){
 
         boolean flag = true;
+        int startIndex = 1;
 
         StringBuilder value = new StringBuilder();
 
+        for (; startIndex < listLines.get(indexList).length(); startIndex++) {
+            if (listLines.get(indexList).charAt(startIndex) == '>')
+                if (listLines.get(indexList).length() == startIndex + 1) {
+                    startIndex = 0;
+                } else {
+                    startIndex++;
+                    break;
+                }
+        }
+
         while (flag) {
-            for (int i = 1; i < listLines.get(indexList).length(); i++) {
-                if (listLines.get(indexList).charAt(i) == '<')
+            for (; startIndex < listLines.get(indexList).length(); startIndex++) {
+                if (listLines.get(indexList).charAt(startIndex) == '<') {
                     flag = false;
-                value.append(listLines.get(indexList).charAt(i));
+                    break;
+                }
+                value.append(listLines.get(indexList).charAt(startIndex));
             }
             indexList++;
+            startIndex = 0;
         }
 
         return value.toString();
@@ -91,8 +111,8 @@ public class ConverterFromXML {
     private String getNameParam(String line){
         StringBuilder nameParam = new StringBuilder();
 
-        for (int i = 1; line.charAt(i) == ' ' && line.charAt(i) == '>'
-                && line.charAt(i) == '/'; i++) {
+        for (int i = 1; line.charAt(i) != ' ' && line.charAt(i) != '>'
+                && line.charAt(i) != '/'; i++) {
             nameParam.append(line.charAt(i));
         }
 
@@ -100,13 +120,19 @@ public class ConverterFromXML {
     }
 
     private List<List<String>> screen(List<List<String>> result){
-        for (var i : result) {
-            for (var j : i) {
+
+        for (int k = 0; k < result.size(); k++) {
+            List<String> i = result.get(k);
+            for (int i1 = 0; i1 < i.size(); i1++) {
+                String j = i.get(i1);
+
                 j = j.replace("&quot;", "\"");
                 j = j.replace("&apos;", "'");
                 j = j.replace("&amp;", "&");
                 j = j.replace("&gt;", ">");
                 j = j.replace("&lt;", "<");
+
+                i.set(i1, j);
             }
         }
 
