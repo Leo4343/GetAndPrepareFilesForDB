@@ -52,7 +52,8 @@ public class ConverterFromXML {
             if (line.startsWith("</"))
                 continue;
 
-            if (line.startsWith("<")) {
+                if (line.startsWith("</"))
+                    continue;
 
                 if (line.contains("=\""))
 
